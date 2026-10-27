@@ -1,17 +1,21 @@
 """Клієнт публічного API OLX.ua (розділ «Робота»)."""
 import asyncio
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 
 import aiohttp
 
-API_URL = "https://www.olx.ua/api/v1/offers/"
-JOBS_CATEGORY_ID = 6  # «Робота» на olx.ua
+COUNTRY = os.getenv("OLX_COUNTRY", "ua").lower()
+DOMAIN = {"ua": "www.olx.ua", "pl": "www.olx.pl"}[COUNTRY]
+API_URL = f"https://{DOMAIN}/api/v1/offers/"
+# Розділ «Робота» / «Praca»
+JOBS_CATEGORY_ID = {"ua": 6, "pl": 4}[COUNTRY]
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
     "Accept": "application/json",
-    "Accept-Language": "uk-UA,uk;q=0.9",
+    "Accept-Language": "pl-PL,pl;q=0.9" if COUNTRY == "pl" else "uk-UA,uk;q=0.9",
 }
 
 
@@ -48,7 +52,7 @@ def _parse(raw: dict) -> Offer:
         if p.get("key") == "salary":
             v = p.get("value") or {}
             salary_from, salary_to = v.get("from"), v.get("to")
-            currency = {"UAH": "грн"}.get(v.get("currency"), v.get("currency") or "грн")
+            currency = {"UAH": "грн", "PLN": "zł"}.get(v.get("currency"), v.get("currency") or "грн")
     loc = raw.get("location") or {}
     created = raw.get("created_time") or raw.get("last_refresh_time")
     try:
@@ -86,7 +90,7 @@ async def search(session: aiohttp.ClientSession, query: str, *,
 
 async def find_city(session: aiohttp.ClientSession, name: str) -> tuple[int, str] | None:
     """Шукає місто за назвою через автопідказки OLX."""
-    url = "https://www.olx.ua/api/v1/geo-encoder/location-autocomplete/"
+    url = f"https://{DOMAIN}/api/v1/geo-encoder/location-autocomplete/"
     async with session.get(url, params={"query": name}, headers=HEADERS,
                            timeout=aiohttp.ClientTimeout(total=15)) as r:
         if r.status != 200:

@@ -1,6 +1,12 @@
-"""Категорії вакансій: назва -> ключові слова для пошуку та класифікації."""
+"""Категорії вакансій: назва -> ключові слова для пошуку та класифікації.
 
-CATEGORIES: dict[str, dict] = {
+Ключові слова залежать від країни OLX (змінна оточення OLX_COUNTRY: ua або pl).
+"""
+import os
+
+COUNTRY = os.getenv("OLX_COUNTRY", "ua").lower()
+
+CATEGORIES_UA: dict[str, dict] = {
     "zavod": {"title": "🏭 Завод / виробництво",
               "keywords": ["завод", "виробництво", "оператор верстата", "різноробочий", "фабрика", "цех"]},
     "sklad": {"title": "📦 Склад",
@@ -20,6 +26,29 @@ CATEGORIES: dict[str, dict] = {
     "ofis": {"title": "💼 Офіс / менеджер",
              "keywords": ["менеджер", "оператор call", "адміністратор", "бухгалтер", "секретар"]},
 }
+
+CATEGORIES_PL: dict[str, dict] = {
+    "zavod": {"title": "🏭 Завод / виробництво",
+              "keywords": ["produkcja", "fabryka", "pracownik produkcji", "operator maszyn", "zakład"]},
+    "sklad": {"title": "📦 Склад",
+              "keywords": ["magazyn", "magazynier", "kompletacja", "pakowanie", "wózek widłowy"]},
+    "kasyr": {"title": "🛒 Касир / продавець",
+              "keywords": ["kasjer", "sprzedawca", "sklep", "kasjer-sprzedawca"]},
+    "vodiy": {"title": "🚚 Водій / кур'єр",
+              "keywords": ["kierowca", "kurier", "dostawca", "kierowca kat. b"]},
+    "budivnytstvo": {"title": "🏗 Будівництво",
+                     "keywords": ["budowa", "budowlaniec", "murarz", "elektryk", "spawacz", "hydraulik"]},
+    "horeca": {"title": "🍽 Кафе / ресторан",
+               "keywords": ["kelner", "kucharz", "barman", "barista", "pomoc kuchenna", "zmywak"]},
+    "prybyrannia": {"title": "🧹 Прибирання",
+                    "keywords": ["sprzątanie", "sprzątaczka", "pokojówka", "osoba sprzątająca"]},
+    "okhorona": {"title": "🛡 Охорона",
+                 "keywords": ["ochrona", "ochroniarz", "pracownik ochrony", "portier"]},
+    "ofis": {"title": "💼 Офіс / менеджер",
+             "keywords": ["biuro", "recepcjonista", "konsultant", "księgowa", "asystent"]},
+}
+
+CATEGORIES = CATEGORIES_PL if COUNTRY == "pl" else CATEGORIES_UA
 
 
 def classify(title: str, description: str = "") -> list[str]:

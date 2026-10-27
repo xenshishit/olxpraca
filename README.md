@@ -20,3 +20,10 @@ python -m olxbot.main
 ```
 
 Категорії і ключові слова редагуються в `olxbot/categories.py`.
+
+## Без сервера: розсилка через GitHub Actions
+Файл `.github/workflows/notify.yml` кожні ~20 хв перевіряє OLX і надсилає нові
+вакансії в Telegram. Налаштування (місто, категорії, з/п) — у блоці `env` цього файлу.
+Потрібні секрети репозиторію: `BOT_TOKEN` і `CHAT_ID`.
+
+Країна OLX задається змінною `OLX_COUNTRY` (`ua` або `pl`).

@@ -1,0 +1,44 @@
+name: OLX нові вакансії
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"   # кожні ~20 хвилин
+  workflow_dispatch:          # кнопка ручного запуску
+
+concurrency: notify
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Відновити список надісланих
+        uses: actions/cache/restore@v4
+        with:
+          path: sent.json
+          key: sent-${{ github.run_id }}
+          restore-keys: sent-
+
+      - name: Перевірити OLX і надіслати
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          OLX_COUNTRY: pl
+          CITY: Poznań
+          CATEGORIES: all
+          MIN_SALARY: "0"
+          EXCLUDE: ""
+        run: python -m olxbot.notify_once
+
+      - name: Зберегти список надісланих
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: sent.json
+          key: sent-${{ github.run_id }}
